@@ -1,0 +1,29 @@
+#!/usr/bin/python
+import os
+import time
+import syslog
+
+syslog.syslog('Antispam Proccessing Started')
+
+hd = '/var/spool/antispam/ham'
+sd = '/var/spool/antispam/spam'
+
+while True:
+    #change permissions
+    os.system('chmod -R 666 '+hd+'/*')
+    os.system('chmod -R 666 '+sd+'/*')
+
+    #sa-learn spam
+    slist = os.listdir(sd)
+    os.system('sudo -uamavis -H sa-learn --spam '+sd+'/*')
+    for f in slist:
+        os.remove(sd+'/'+f)
+
+    #sa-learn ham
+    hlist = os.listdir(hd)
+    os.system('sudo -uamavis -H sa-learn --ham '+hd+'/*')
+    for f in hlist:
+        os.remove(hd+'/'+f)
+
+    #wait a while
+    time.sleep(60*5)
